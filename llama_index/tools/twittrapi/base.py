@@ -76,8 +76,11 @@ def _check_count(count: Optional[int]) -> None:
 def _user_target(user_id: Optional[str], username: Optional[str]) -> dict:
     if user_id:
         return {"user_id": str(user_id)}
-    if isinstance(username, str) and username.strip().lstrip("@"):
-        return {"username": username.strip().lstrip("@")}
+    if isinstance(username, str):
+        handle = username.strip()
+        handle = handle[1:].strip() if handle.startswith("@") else handle
+        if handle:
+            return {"username": handle}
     raise ValueError("Provide either user_id or username.")
 
 

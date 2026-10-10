@@ -4,6 +4,19 @@ All notable changes to this project are listed here. The format follows [Keep a 
 
 ## [Unreleased]
 
+### Fixed
+
+- Paginated tools no longer print a `next_cursor` for a page that has only cursor entries and no
+  results (X keeps returning one at the end); they say it is the last page instead.
+- Usernames: only one leading `@` is stripped, like the SDK.
+
+### Added
+
+- Tests against trimmed real API responses (`tests/fixtures/live/`): followers (Bottom cursor
+  before Top), tweet detail, search wrapper, slice `next_cursor`, empty likes and favorites,
+  articles with an empty `tweet_results`, usernames-to-ids with the optional `errors` array,
+  `count` limits 1..100 and user ID winning over username.
+
 ## [0.1.0] - 2026-10-10
 
 ### Added
