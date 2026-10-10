@@ -1,0 +1,42 @@
+name: test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
+        deps: ["latest"]
+        include:
+          # Oldest supported versions of our direct dependencies.
+          - python-version: "3.10"
+            deps: "lowest"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - uses: astral-sh/setup-uv@v6
+      - name: Install twittrapi SDK
+        # Falls back to the GitHub source until twittrapi is on PyPI.
+        run: |
+          uv venv
+          uv pip install "twittrapi>=0.1.0,<0.2" || uv pip install "twittrapi @ git+https://github.com/twittrapi/twittrapi-python.git"
+      - name: Install package and test dependencies
+        run: |
+          RESOLUTION=highest
+          if [ "${{ matrix.deps }}" = "lowest" ]; then RESOLUTION=lowest-direct; fi
+          uv pip install --resolution "$RESOLUTION" -e . --group test
+      - name: Run tests
+        run: uv run --no-sync pytest -q
