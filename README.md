@@ -4,7 +4,7 @@
 [![test](https://github.com/twittrapi/llama-index-tools-twittrapi/actions/workflows/test.yml/badge.svg)](https://github.com/twittrapi/llama-index-tools-twittrapi/actions/workflows/test.yml)
 [![Python](https://img.shields.io/pypi/pyversions/llama-index-tools-twittrapi.svg)](https://pypi.org/project/llama-index-tools-twittrapi/)
 
-`llama-index-tools-twittrapi` gives LlamaIndex agents read access to X (Twitter): user profiles, tweets, search, followers, lists, communities and trends, through [TwittrAPI](https://twittrapi.com).
+`llama-index-tools-twittrapi` is a set of LlamaIndex tools for [TwittrAPI](https://twittrapi.com), a REST API for public Twitter/X data. LlamaIndex agents can read tweets, profiles, followers, search results, lists, communities and trends. Pay as you go from $0.065 per 1,000 calls, no X developer account. Not affiliated with X Corp.
 
 > **Get an API key:** [twittrapi.com/start](https://twittrapi.com/start?utm_source=github&utm_medium=readme&utm_campaign=llama-index-tools-twittrapi) · [Pricing](https://twittrapi.com/pricing?utm_source=github&utm_medium=readme&utm_campaign=llama-index-tools-twittrapi) · [Docs](https://twittrapi.com/docs?utm_source=github&utm_medium=readme&utm_campaign=llama-index-tools-twittrapi) · also available on [RapidAPI](https://rapidapi.com/viperscores-viperscores-default/api/twitter-aio)
 
