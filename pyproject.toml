@@ -29,7 +29,7 @@ classifiers = [
 ]
 dependencies = [
     "llama-index-core>=0.13.0,<0.15",
-    "twittrapi>=0.1.0,<0.2",
+    "twittrapi>=0.2.0,<0.3",
 ]
 
 [project.urls]
