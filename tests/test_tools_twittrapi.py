@@ -82,7 +82,7 @@ def test_sync_argument_passing(api: MockAPI, name: str, args: Dict[str, Any], pa
     out = tool.call(**args).content
     assert api.last.method == "GET"
     assert api.last.url.path == path
-    assert query(api.last) == params
+    assert query(api.last) == {**params, "format": "simple"}  # simple is the default
     assert out.startswith("next_cursor: NEXT_CURSOR_123") == paginated
 
 
@@ -93,7 +93,7 @@ async def test_async_argument_passing(api: MockAPI, name: str, args: Dict[str, A
     assert spec.client is None
     out = (await tools_by_name(spec)[name].acall(**args)).content
     assert api.last.url.path == path
-    assert query(api.last) == params
+    assert query(api.last) == {**params, "format": "simple"}  # simple is the default
     assert ("next_cursor: NEXT_CURSOR_123" in out) == paginated
 
 

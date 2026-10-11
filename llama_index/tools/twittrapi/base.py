@@ -1,8 +1,10 @@
 """TwittrAPI tool spec: read X (Twitter) data from LlamaIndex agents.
 
-Every tool is read-only and calls the official ``twittrapi`` SDK. Results are X's raw JSON,
-cut to ``max_chars`` characters. Paginated tools print ``next_cursor`` first so the agent can
-ask for the next page.
+Every tool is read-only and calls the official ``twittrapi`` SDK. Results are the API's
+compact simple format by default (flat, camelCase tweets and users, far fewer tokens than X's
+raw JSON; https://twittrapi.com/docs/simple-format). Pass ``api_response_format="raw"`` for X's
+raw JSON. Output is cut to ``max_chars`` characters. Paginated tools print ``next_cursor``
+first so the agent can ask for the next page.
 """
 
 # No ``from __future__ import annotations`` here: LlamaIndex builds the tool schemas from the
@@ -16,7 +18,16 @@ from twittrapi import AsyncTwittrAPI, TwittrAPI, TwittrAPIError
 
 from llama_index.tools.twittrapi._output import DEFAULT_MAX_CHARS, format_result
 
-__all__ = ["TwittrAPIToolSpec", "TwittrAPIToolError", "TOOL_NAMES"]
+__all__ = [
+    "TwittrAPIToolSpec",
+    "TwittrAPIToolError",
+    "TOOL_NAMES",
+    "ApiResponseFormat",
+    "DEFAULT_API_RESPONSE_FORMAT",
+]
+
+ApiResponseFormat = Literal["simple", "raw"]
+DEFAULT_API_RESPONSE_FORMAT: ApiResponseFormat = "simple"
 
 SearchCategory = Literal["Top", "Latest", "People", "Photos", "Videos"]
 RankingMode = Literal["Relevance", "Recency", "Likes"]
@@ -93,6 +104,11 @@ class TwittrAPIToolSpec(BaseToolSpec):
 
     Each tool has a sync and an async implementation; agents that run tools asynchronously
     use ``AsyncTwittrAPI``.
+
+    ``api_response_format`` is ``"simple"`` by default: the API's compact format
+    (``format=simple``), flat camelCase objects with ``nextCursor``/``hasNextPage`` and far
+    fewer tokens. Pass ``"raw"`` for X's raw GraphQL JSON with every field X sends. It is sent
+    on every call, whatever the default of a ``client`` you pass in.
     """
 
     spec_functions = [(name, f"a{name}") for name in TOOL_NAMES]
@@ -106,9 +122,12 @@ class TwittrAPIToolSpec(BaseToolSpec):
         client: Optional[TwittrAPI] = None,
         async_client: Optional[AsyncTwittrAPI] = None,
         max_chars: int = DEFAULT_MAX_CHARS,
+        api_response_format: ApiResponseFormat = DEFAULT_API_RESPONSE_FORMAT,
     ) -> None:
         if isinstance(max_chars, bool) or not isinstance(max_chars, int) or max_chars < 100:
             raise ValueError("max_chars must be an integer >= 100")
+        if api_response_format not in ("simple", "raw"):
+            raise ValueError(f'api_response_format must be "simple" or "raw", got {api_response_format!r}')
         if client is None and async_client is None:
             kwargs = {"api_key": api_key, "rapidapi_key": rapidapi_key, "base_url": base_url}
             try:
@@ -119,6 +138,7 @@ class TwittrAPIToolSpec(BaseToolSpec):
         self.client = client
         self.async_client = async_client
         self.max_chars = max_chars
+        self.api_response_format = api_response_format
 
     # -- plumbing ------------------------------------------------------------
 
@@ -153,21 +173,21 @@ class TwittrAPIToolSpec(BaseToolSpec):
         """
         Get an X (Twitter) user's profile by handle: name, bio, follower/following counts, verification, created date, and the numeric user ID (rest_id) needed by other tools.
         """
-        return self._run(lambda api: api.users.get_by_username(username), False)
+        return self._run(lambda api: api.users.get_by_username(username, response_format=self.api_response_format), False)
 
     async def aget_user_by_username(self, username: Username) -> str:
         """Async version of get_user_by_username."""
-        return await self._arun(lambda api: api.users.get_by_username(username), False)
+        return await self._arun(lambda api: api.users.get_by_username(username, response_format=self.api_response_format), False)
 
     def get_user_by_id(self, user_id: UserId) -> str:
         """
         Get an X user's profile by numeric user ID (rest_id). Same data as get_user_by_username.
         """
-        return self._run(lambda api: api.users.get_by_id(user_id), False)
+        return self._run(lambda api: api.users.get_by_id(user_id, response_format=self.api_response_format), False)
 
     async def aget_user_by_id(self, user_id: UserId) -> str:
         """Async version of get_user_by_id."""
-        return await self._arun(lambda api: api.users.get_by_id(user_id), False)
+        return await self._arun(lambda api: api.users.get_by_id(user_id, response_format=self.api_response_format), False)
 
     def get_user_tweets(
         self,
@@ -245,8 +265,8 @@ class TwittrAPIToolSpec(BaseToolSpec):
             lambda api: self._user_call(api.users.following, user_id, username, count, cursor), True
         )
 
-    @staticmethod
     def _user_call(
+        self,
         method: Callable[..., Any],
         user_id: Optional[str],
         username: Optional[str],
@@ -254,7 +274,12 @@ class TwittrAPIToolSpec(BaseToolSpec):
         cursor: Optional[str],
     ) -> Any:
         _check_count(count)
-        return method(**_user_target(user_id, username), count=count, cursor=cursor or None)
+        return method(
+            **_user_target(user_id, username),
+            count=count,
+            cursor=cursor or None,
+            response_format=self.api_response_format,
+        )
 
     # -- search and tweets -------------------------------------------------------
 
@@ -280,14 +305,19 @@ class TwittrAPIToolSpec(BaseToolSpec):
         """Async version of search_tweets."""
         return await self._arun(lambda api: self._search(api, query, category, count, cursor), True)
 
-    @staticmethod
-    def _search(api: Any, query: str, category: Optional[str], count: Optional[int], cursor: Optional[str]) -> Any:
+    def _search(self, api: Any, query: str, category: Optional[str], count: Optional[int], cursor: Optional[str]) -> Any:
         if not isinstance(query, str) or not query.strip():
             raise ValueError("query must be a non-empty string")
         if len(query) > 512:
             raise ValueError("query must be at most 512 characters")
         _check_count(count)
-        return api.search.tweets(query, category=category or None, count=count, cursor=cursor or None)
+        return api.search.tweets(
+            query,
+            category=category or None,
+            count=count,
+            cursor=cursor or None,
+            response_format=self.api_response_format,
+        )
 
     def get_tweet(
         self,
@@ -299,7 +329,12 @@ class TwittrAPIToolSpec(BaseToolSpec):
         Get a tweet by ID with full text, author, media, engagement counts and the reply thread (conversation). Use cursor to load more replies.
         """
         return self._run(
-            lambda api: api.tweets.get(tweet_id, ranking_mode=ranking_mode or None, cursor=cursor or None), True
+            lambda api: api.tweets.get(
+                tweet_id,
+                ranking_mode=ranking_mode or None,
+                cursor=cursor or None,
+                response_format=self.api_response_format,
+            ), True
         )
 
     async def aget_tweet(
@@ -310,7 +345,12 @@ class TwittrAPIToolSpec(BaseToolSpec):
     ) -> str:
         """Async version of get_tweet."""
         return await self._arun(
-            lambda api: api.tweets.get(tweet_id, ranking_mode=ranking_mode or None, cursor=cursor or None), True
+            lambda api: api.tweets.get(
+                tweet_id,
+                ranking_mode=ranking_mode or None,
+                cursor=cursor or None,
+                response_format=self.api_response_format,
+            ), True
         )
 
     def get_tweet_retweets(self, tweet_id: TweetId, count: Count = None, cursor: Cursor = None) -> str:
@@ -337,10 +377,11 @@ class TwittrAPIToolSpec(BaseToolSpec):
         """Async version of get_tweet_quotes."""
         return await self._arun(lambda api: self._paged(api.tweets.quotes, tweet_id, count, cursor), True)
 
-    @staticmethod
-    def _paged(method: Callable[..., Any], item_id: str, count: Optional[int], cursor: Optional[str]) -> Any:
+    def _paged(self, method: Callable[..., Any], item_id: str, count: Optional[int], cursor: Optional[str]) -> Any:
         _check_count(count)
-        return method(item_id, count=count, cursor=cursor or None)
+        return method(
+            item_id, count=count, cursor=cursor or None, response_format=self.api_response_format
+        )
 
     # -- lists, communities, trends ------------------------------------------------
 
@@ -374,16 +415,16 @@ class TwittrAPIToolSpec(BaseToolSpec):
         """
         Get trending topics for a location by WOEID (1 = worldwide, 23424977 = United States, 23424975 = United Kingdom). Use get_trend_locations to look up other WOEIDs.
         """
-        return self._run(lambda api: api.trends.get(location_id or "1"), False)
+        return self._run(lambda api: api.trends.get(location_id or "1", response_format=self.api_response_format), False)
 
     async def aget_trends(self, location_id: LocationId = "1") -> str:
         """Async version of get_trends."""
-        return await self._arun(lambda api: api.trends.get(location_id or "1"), False)
+        return await self._arun(lambda api: api.trends.get(location_id or "1", response_format=self.api_response_format), False)
 
     def get_trend_locations(self) -> str:
         """List the locations (countries and cities) that have trends, with their WOEIDs for get_trends."""
-        return self._run(lambda api: api.trends.locations(), False)
+        return self._run(lambda api: api.trends.locations(response_format=self.api_response_format), False)
 
     async def aget_trend_locations(self) -> str:
         """Async version of get_trend_locations."""
-        return await self._arun(lambda api: api.trends.locations(), False)
+        return await self._arun(lambda api: api.trends.locations(response_format=self.api_response_format), False)

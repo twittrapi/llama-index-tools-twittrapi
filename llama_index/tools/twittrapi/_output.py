@@ -1,4 +1,4 @@
-"""Turns raw TwittrAPI responses into the text a model sees."""
+"""Turns TwittrAPI responses (simple or raw format) into the text a model sees."""
 
 from __future__ import annotations
 
@@ -6,12 +6,13 @@ import json
 from typing import Any
 
 from twittrapi import extract_bottom_cursor
-from twittrapi.pagination import page_is_empty
+from twittrapi.pagination import is_simple_page, page_is_empty, simple_next_cursor
 
 DEFAULT_MAX_CHARS = 20_000
 
 NO_CURSOR = "next_cursor: none found (this may be the last page)"
 EMPTY_PAGE = "next_cursor: none (this page has no results, so it is the last page)"
+LAST_PAGE = "next_cursor: none (hasNextPage is false, so this is the last page)"
 CURSOR_HINT = "Pass next_cursor as `cursor` to get the next page."
 
 
@@ -32,14 +33,20 @@ def format_result(data: Any, *, max_chars: int = DEFAULT_MAX_CHARS, paginated: b
     """Returns the response as compact JSON, cut at ``max_chars``.
 
     For paginated endpoints the next-page cursor is printed first, outside the truncation
-    budget, so the model can always keep paging even when the JSON is cut. Cursor detection
-    covers timeline cursor entries (Bottom, never Top), the ``/search`` entries wrapper and
+    budget, so the model can always keep paging even when the JSON is cut. Simple-format pages
+    carry it as ``nextCursor`` / ``hasNextPage``. For raw pages, detection covers timeline
+    cursor entries (Bottom, never Top), the ``/search`` entries wrapper and
     ``slice_info.next_cursor``. Empty timelines (likes, favorites) report no cursor.
     """
     body = data if isinstance(data, str) else json.dumps(data, ensure_ascii=False, separators=(",", ":"))
     text = truncate(body, max_chars)
     if not paginated:
         return text
+    if is_simple_page(data):
+        simple_cursor = simple_next_cursor(data)
+        if not simple_cursor:
+            return f"{LAST_PAGE}\n\n{text}"
+        return f"next_cursor: {simple_cursor}\n{CURSOR_HINT}\n\n{text}"
     cursor = None if isinstance(data, str) else extract_bottom_cursor(data)
     if cursor and page_is_empty(data):
         # X keeps returning a cursor after the last result; following it only repeats

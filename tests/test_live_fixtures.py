@@ -1,7 +1,8 @@
 """Tool output for trimmed real TwittrAPI responses (tests/fixtures/live, captured 2026-10-10).
 
 Each fixture is ``{"request": ..., "capturedAt": ..., "response": <API body>}``; only
-``response`` is served. No network access.
+``response`` is served. No network access. These are raw-format responses, so the spec is
+created with ``api_response_format="raw"``.
 """
 
 from __future__ import annotations
@@ -38,7 +39,7 @@ def test_followers_bottom_before_top(api: MockAPI) -> None:
     cursors = [e for e in timeline_entries(data) if e["entryId"].startswith("cursor-")]
     assert [c["content"]["cursorType"] for c in cursors] == ["Bottom", "Top"]
     api.respond(data)
-    out = TwittrAPIToolSpec(client=api.client()).get_followers(user_id="2244994945", count=20)
+    out = TwittrAPIToolSpec(client=api.client(), api_response_format="raw").get_followers(user_id="2244994945", count=20)
     assert first_line(out) == f"next_cursor: {cursors[0]['content']['value']}"
     assert query(api.last) == {"count": "20"}
 
@@ -47,7 +48,7 @@ def test_user_tweets_bottom_cursor(api: MockAPI) -> None:
     data = live("user-userid-tweets")
     bottom = [e for e in timeline_entries(data) if e["entryId"].startswith("cursor-bottom-")][0]
     api.respond(data)
-    out = TwittrAPIToolSpec(client=api.client()).get_user_tweets(user_id="2244994945")
+    out = TwittrAPIToolSpec(client=api.client(), api_response_format="raw").get_user_tweets(user_id="2244994945")
     assert first_line(out) == f"next_cursor: {bottom['content']['value']}"
 
 
@@ -56,7 +57,7 @@ def test_tweet_detail_cursor(api: MockAPI) -> None:
     last = data["data"]["threaded_conversation_with_injections_v2"]["instructions"][1]["entries"][-1]
     value = last["content"].get("value") or last["content"]["itemContent"]["value"]
     api.respond(data)
-    out = TwittrAPIToolSpec(client=api.client()).get_tweet("2019881223666233717")
+    out = TwittrAPIToolSpec(client=api.client(), api_response_format="raw").get_tweet("2019881223666233717")
     assert first_line(out) == f"next_cursor: {value}"
 
 
@@ -64,7 +65,7 @@ def test_search_wrapper(api: MockAPI) -> None:
     data = live("search")
     bottom = [e for e in data["entries"][0]["entries"] if e["entryId"].startswith("cursor-bottom-")][0]
     api.respond(data)
-    out = TwittrAPIToolSpec(client=api.client()).search_tweets("openai", category="Latest")
+    out = TwittrAPIToolSpec(client=api.client(), api_response_format="raw").search_tweets("openai", category="Latest")
     assert first_line(out) == f"next_cursor: {bottom['content']['value']}"
 
 
@@ -124,7 +125,7 @@ def test_usernames_to_ids_with_errors_array() -> None:
 
 def test_user_id_wins_and_one_at_stripped(api: MockAPI) -> None:
     api.respond(live("user-userid-followers"))
-    spec = TwittrAPIToolSpec(client=api.client())
+    spec = TwittrAPIToolSpec(client=api.client(), api_response_format="raw")
     spec.get_followers(user_id="2244994945", username="XDevelopers")
     assert api.last.url.path == "/user/2244994945/followers"
     assert "username" not in query(api.last)
@@ -136,7 +137,7 @@ def test_user_id_wins_and_one_at_stripped(api: MockAPI) -> None:
 @pytest.mark.parametrize("count, ok", [(1, True), (100, True), (0, False), (101, False)])
 def test_count_limits(api: MockAPI, count: int, ok: bool) -> None:
     api.respond(live("user-userid-followers"))
-    spec = TwittrAPIToolSpec(client=api.client())
+    spec = TwittrAPIToolSpec(client=api.client(), api_response_format="raw")
     if ok:
         spec.get_followers(user_id="12", count=count)
         assert query(api.last)["count"] == str(count)
@@ -148,5 +149,5 @@ def test_count_limits(api: MockAPI, count: int, ok: bool) -> None:
 
 def test_user_profile_not_paginated(api: MockAPI) -> None:
     api.respond({"data": {"user": {"result": {"rest_id": "12"}}}})
-    out = TwittrAPIToolSpec(client=api.client()).get_user_by_id("12")
+    out = TwittrAPIToolSpec(client=api.client(), api_response_format="raw").get_user_by_id("12")
     assert not out.startswith("next_cursor")
