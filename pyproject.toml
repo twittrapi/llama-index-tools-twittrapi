@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "llama-index-tools-twittrapi"
-version = "0.1.0"
+version = "0.2.0"
 description = "llama-index tools twittrapi integration: read X (Twitter) users, tweets, search, lists, communities and trends from LlamaIndex agents."
 readme = "README.md"
 license = "MIT"
