@@ -1,12 +1,19 @@
+<p align="center">
+  <a href="https://twittrapi.com"><img src=".github/banner.png" alt="llama-index-tools-twittrapi: Twitter/X tools for LlamaIndex agents" width="100%"></a>
+</p>
+
 # Twitter/X tools for LlamaIndex agents – TwittrAPI
 
 [![PyPI](https://img.shields.io/pypi/v/llama-index-tools-twittrapi.svg)](https://pypi.org/project/llama-index-tools-twittrapi/)
 [![test](https://github.com/twittrapi/llama-index-tools-twittrapi/actions/workflows/test.yml/badge.svg)](https://github.com/twittrapi/llama-index-tools-twittrapi/actions/workflows/test.yml)
 [![Python](https://img.shields.io/pypi/pyversions/llama-index-tools-twittrapi.svg)](https://pypi.org/project/llama-index-tools-twittrapi/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 `llama-index-tools-twittrapi` is a set of LlamaIndex tools for [TwittrAPI](https://twittrapi.com), a REST API for public Twitter/X data. LlamaIndex agents can read tweets, profiles, followers, search results, lists, communities and trends. Pay as you go from $0.065 per 1,000 calls, no X developer account. Not affiliated with X Corp.
 
-> **Get an API key:** [twittrapi.com/start](https://twittrapi.com/start?utm_source=github&utm_medium=readme&utm_campaign=llama-index-tools-twittrapi) · [Pricing](https://twittrapi.com/pricing?utm_source=github&utm_medium=readme&utm_campaign=llama-index-tools-twittrapi) · [Docs](https://twittrapi.com/docs?utm_source=github&utm_medium=readme&utm_campaign=llama-index-tools-twittrapi) · also available on [RapidAPI](https://rapidapi.com/viperscores-viperscores-default/api/twitter-aio)
+> **Get an API key:** [twittrapi.com/start](https://twittrapi.com/start?utm_source=github&utm_medium=readme&utm_campaign=llama-index-tools-twittrapi) · [Pricing](https://twittrapi.com/pricing?utm_source=github&utm_medium=readme&utm_campaign=llama-index-tools-twittrapi) · [Docs](https://twittrapi.com/docs?utm_source=github&utm_medium=readme&utm_campaign=llama-index-tools-twittrapi) · [Status](https://twittrapi.com/status) · also available on [RapidAPI](https://rapidapi.com/viperscores-viperscores-default/api/twitter-aio)
+
+**SDKs and integrations:** [Python](https://github.com/twittrapi/twittrapi-python) · [Node.js](https://github.com/twittrapi/twittrapi-node) · [Go](https://github.com/twittrapi/twittrapi-go) · [MCP server](https://github.com/twittrapi/twittrapi-mcp) · [n8n](https://github.com/twittrapi/n8n-nodes-twittrapi) · [Make](https://github.com/twittrapi/twittrapi-make) · [Apify](https://github.com/twittrapi/twittrapi-apify) · [LangChain](https://github.com/twittrapi/langchain-twittrapi) · [Agent skill](https://github.com/twittrapi/twittrapi-skills) · [Examples](https://github.com/twittrapi/twittrapi-examples)
 
 All tools are read-only. They are built on the official [`twittrapi`](https://github.com/twittrapi/twittrapi-python) Python SDK.
 
