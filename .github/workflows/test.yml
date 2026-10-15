@@ -32,7 +32,7 @@ jobs:
         # Falls back to the GitHub source until twittrapi is on PyPI.
         run: |
           uv venv
-          uv pip install "twittrapi>=0.4.0,<0.5" || uv pip install "twittrapi @ git+https://github.com/twittrapi/twittrapi-python.git"
+          uv pip install "twittrapi>=1.0.0,<2" || uv pip install "twittrapi @ git+https://github.com/twittrapi/twittrapi-python.git"
       - name: Install package and test dependencies
         run: |
           RESOLUTION=highest

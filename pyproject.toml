@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "llama-index-tools-twittrapi"
-version = "0.2.0"
+version = "1.0.0"
 description = "LlamaIndex tools for TwittrAPI: read public Twitter/X tweets, profiles, followers and search results. Pay as you go from $0.065 per 1,000 calls."
 readme = "README.md"
 license = "MIT"
@@ -14,7 +14,7 @@ authors = [{ name = "TwittrAPI" }]
 maintainers = [{ name = "twittrapi" }]
 keywords = ["twitter api", "x api", "twitter scraper", "tweets", "twitter search", "twitter followers", "social media data", "twittrapi", "llama-index", "llamaindex", "ai-agents"]
 classifiers = [
-    "Development Status :: 4 - Beta",
+    "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
@@ -29,7 +29,7 @@ classifiers = [
 ]
 dependencies = [
     "llama-index-core>=0.13.0,<0.15",
-    "twittrapi>=0.4.0,<0.5",
+    "twittrapi>=1.0.0,<2",
 ]
 
 [project.urls]

@@ -2,7 +2,9 @@
 
 All notable changes to this project are listed here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## [1.0.0] - 2026-10-15
+
+First stable release: the API is stable and follows semantic versioning.
 
 ### Added
 
@@ -13,7 +15,7 @@ All notable changes to this project are listed here. The format follows [Keep a 
 
 ### Changed
 
-- Requires `twittrapi>=0.4.0,<0.5` (the SDK release that adds `rapidapi_host`).
+- Requires `twittrapi>=1.0.0,<2` (the stable SDK release, which adds `rapidapi_host`).
 
 ## [0.2.0] - 2026-10-11
 
@@ -57,6 +59,6 @@ Pre-1.0, so the breaking change below bumps the minor version (0.1.x to 0.2.0).
 - Output cut at `max_chars` (default 20,000) with a `[TRUNCATED: ...]` marker; the next-page cursor is printed first.
 - API errors raised as `TwittrAPIToolError`, which agents show to the model as tool errors.
 
-[Unreleased]: https://github.com/twittrapi/llama-index-tools-twittrapi/compare/v0.2.0...HEAD
+[1.0.0]: https://github.com/twittrapi/llama-index-tools-twittrapi/compare/v0.2.0...v1.0.0
 [0.2.0]: https://github.com/twittrapi/llama-index-tools-twittrapi/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/twittrapi/llama-index-tools-twittrapi/releases/tag/v0.1.0
