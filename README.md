@@ -46,6 +46,10 @@ spec = TwittrAPIToolSpec(rapidapi_key="your-rapidapi-key")  # RapidAPI
 
 If both environment variables are set, `TWITTRAPI_API_KEY` wins.
 
+Subscribed to another TwittrAPI listing on RapidAPI? Set its host:
+`TwittrAPIToolSpec(rapidapi_key="...", rapidapi_host="twttr.p.rapidapi.com")`, or the
+`RAPIDAPI_HOST` environment variable.
+
 ## Quickstart
 
 ### Call a tool directly

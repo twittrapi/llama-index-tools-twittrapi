@@ -4,6 +4,17 @@ All notable changes to this project are listed here. The format follows [Keep a 
 
 ## [Unreleased]
 
+### Added
+
+- `rapidapi_host` on `TwittrAPIToolSpec`, for customers subscribed to another TwittrAPI
+  listing on RapidAPI (e.g. `rapidapi_host="twttr.p.rapidapi.com"`). Passed to the SDK only
+  when set; otherwise the SDK reads `RAPIDAPI_HOST` and falls back to
+  `twitter-aio.p.rapidapi.com`.
+
+### Changed
+
+- Requires `twittrapi>=0.4.0,<0.5` (the SDK release that adds `rapidapi_host`).
+
 ## [0.2.0] - 2026-10-11
 
 Pre-1.0, so the breaking change below bumps the minor version (0.1.x to 0.2.0).

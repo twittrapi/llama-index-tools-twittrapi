@@ -71,7 +71,7 @@ class MockAPI:
 
 @pytest.fixture(autouse=True)
 def _clean_env(monkeypatch: pytest.MonkeyPatch) -> None:
-    for name in ("TWITTRAPI_API_KEY", "RAPIDAPI_KEY", "TWITTRAPI_BASE_URL"):
+    for name in ("TWITTRAPI_API_KEY", "RAPIDAPI_KEY", "RAPIDAPI_HOST", "TWITTRAPI_BASE_URL"):
         monkeypatch.delenv(name, raising=False)
 
 

@@ -130,6 +130,33 @@ def test_builds_clients_from_keys() -> None:
     assert rapid.client.auth_mode == rapid.async_client.auth_mode == "rapidapi"
 
 
+def test_rapidapi_host() -> None:
+    spec = TwittrAPIToolSpec(rapidapi_key="k", rapidapi_host="https://twttr.p.rapidapi.com/")
+    assert spec.client.rapidapi_host == spec.async_client.rapidapi_host == "twttr.p.rapidapi.com"
+    assert spec.client.base_url == "https://twttr.p.rapidapi.com"
+    assert TwittrAPIToolSpec(rapidapi_key="k").client.rapidapi_host == "twitter-aio.p.rapidapi.com"
+
+
+def test_rapidapi_host_from_env(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("RAPIDAPI_HOST", "twttr.p.rapidapi.com")
+    assert TwittrAPIToolSpec(rapidapi_key="k").client.rapidapi_host == "twttr.p.rapidapi.com"
+
+
+def test_rapidapi_host_only_passed_when_set(monkeypatch: pytest.MonkeyPatch) -> None:
+    seen: list = []
+    monkeypatch.setattr("llama_index.tools.twittrapi.base.TwittrAPI", lambda **kw: seen.append(kw))
+    monkeypatch.setattr("llama_index.tools.twittrapi.base.AsyncTwittrAPI", lambda **kw: None)
+    TwittrAPIToolSpec(rapidapi_key="k")
+    TwittrAPIToolSpec(rapidapi_key="k", rapidapi_host="twttr.p.rapidapi.com")
+    assert "rapidapi_host" not in seen[0]
+    assert seen[1]["rapidapi_host"] == "twttr.p.rapidapi.com"
+
+
+def test_invalid_rapidapi_host() -> None:
+    with pytest.raises(ValueError, match="rapidapi_host"):
+        TwittrAPIToolSpec(rapidapi_key="k", rapidapi_host="twttr.p.rapidapi.com/path")
+
+
 def test_env_key(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("RAPIDAPI_KEY", "env")
     assert TwittrAPIToolSpec().client.auth_mode == "rapidapi"

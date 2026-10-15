@@ -101,6 +101,8 @@ class TwittrAPIToolSpec(BaseToolSpec):
     Auth: pass ``api_key`` (direct API) or ``rapidapi_key`` (RapidAPI). With neither, the SDK
     reads ``TWITTRAPI_API_KEY`` and then ``RAPIDAPI_KEY`` from the environment. You can also
     pass ready-made ``client`` / ``async_client`` instances from the ``twittrapi`` SDK.
+    ``rapidapi_host`` (or ``RAPIDAPI_HOST``) selects another TwittrAPI listing on RapidAPI,
+    e.g. ``twttr.p.rapidapi.com``; the default is ``twitter-aio.p.rapidapi.com``.
 
     Each tool has a sync and an async implementation; agents that run tools asynchronously
     use ``AsyncTwittrAPI``.
@@ -118,6 +120,7 @@ class TwittrAPIToolSpec(BaseToolSpec):
         api_key: Optional[str] = None,
         rapidapi_key: Optional[str] = None,
         *,
+        rapidapi_host: Optional[str] = None,
         base_url: Optional[str] = None,
         client: Optional[TwittrAPI] = None,
         async_client: Optional[AsyncTwittrAPI] = None,
@@ -129,7 +132,10 @@ class TwittrAPIToolSpec(BaseToolSpec):
         if api_response_format not in ("simple", "raw"):
             raise ValueError(f'api_response_format must be "simple" or "raw", got {api_response_format!r}')
         if client is None and async_client is None:
-            kwargs = {"api_key": api_key, "rapidapi_key": rapidapi_key, "base_url": base_url}
+            kwargs: dict[str, Any] = {"api_key": api_key, "rapidapi_key": rapidapi_key, "base_url": base_url}
+            # Only when set, so the SDK keeps its own RAPIDAPI_HOST fallback and default.
+            if rapidapi_host:
+                kwargs["rapidapi_host"] = rapidapi_host
             try:
                 client = TwittrAPI(**kwargs)
                 async_client = AsyncTwittrAPI(**kwargs)
